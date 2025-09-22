@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Healthcare Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&amp;display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(120deg, #232526 0%, #414345 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #e0e6ed;
+    overflow-x: hidden;
+  }
+
+  .container {
+    background: rgba(30, 41, 59, 0.7);
+    width: 600px;
+    padding: 64px 60px 60px;
+    border-radius: 28px;
+    box-shadow: 0 18px 48px 0 rgba(0,0,0,0.38), 0 2px 12px 0 rgba(0,255,255,0.10);
+    transition: all 0.3s cubic-bezier(.4,2,.6,1);
+    backdrop-filter: blur(18px) saturate(1.3);
+    border: 2.5px solid #00fff7;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeInContainer 1.2s cubic-bezier(.4,2,.6,1) 0.1s forwards;
+  }
+  @keyframes fadeInContainer {
+    from { opacity: 0; transform: translateY(40px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .container::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px; right: -60px; bottom: -60px;
+    background: radial-gradient(circle at 20% 10%, #00fff7 0%, transparent 60%),
+                radial-gradient(circle at 80% 90%, #00fff7 0%, transparent 70%);
+    opacity: 0.13;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  h2 {
+    text-align: center;
+    color: #00fff7;
+    margin-bottom: 25px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 12px #00fff7a0;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    margin: 12px 0 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #34495e;
+  }
+
+  input, textarea {
+    padding: 12px 15px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 1.8px solid #bdc3c7;
+    outline: none;
+    resize: none;
+    transition: border-color 0.3s ease;
+  }
+  input:focus, textarea:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+  }
+
+  button {
+    margin-top: 25px;
+    padding: 14px 0;
+    font-weight: 600;
+    font-size: 17px;
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.18s cubic-bezier(.4,2,.6,1);
+    animation: fadeInButton 1.1s cubic-bezier(.4,2,.6,1) 0.3s backwards;
+  }
+  button:hover {
+    background: linear-gradient(45deg, #2980b9, #2471a3);
+    box-shadow: 0 8px 20px rgba(41, 128, 185, 0.6);
+    transform: scale(1.07) rotate(-1deg);
+    animation: pulseBtn 0.4s cubic-bezier(.4,2,.6,1);
+  }
+  @keyframes fadeInButton {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes pulseBtn {
+    0% { box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+    50% { box-shadow: 0 0 32px #00fff7, 0 8px 20px rgba(41,128,185,0.6); }
+    100% { box-shadow: 0 8px 20px rgba(41,128,185,0.6); }
+  }
+
+  .toggle-link {
+    margin-top: 18px;
+    text-align: center;
+    color: #00fff7;
+    cursor: pointer;
+    font-size: 15px;
+    user-select: none;
+    transition: color 0.3s ease;
+    text-shadow: 0 1px 8px #00fff7a0;
+  }
+  .toggle-link:hover {
+    color: #fff;
+    text-shadow: 0 2px 12px #00fff7;
+  }
+
+  .solution {
+    margin-top: 20px;
+    background: rgba(0,255,247,0.08);
+    border: 1.5px solid #00fff7;
+    color: #00fff7;
+    padding: 15px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 0 16px #00fff7a0;
+    line-height: 1.4;
+    text-shadow: 0 1px 8px #00fff7a0;
+  }
+
+  #logout-button {
+    background: #e74c3c !important;
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4) !important;
+  }
+  #logout-button:hover {
+    background: #c0392b !important;
+    box-shadow: 0 8px 20px rgba(192, 57, 43, 0.6) !important;
+  }
+
+
+  /* Scrollbar for textarea */
+  textarea::-webkit-scrollbar {
+    width: 7px;
+  }
+  textarea::-webkit-scrollbar-track {
+    background: #ecf0f1;
+    border-radius: 10px;
+  }
+  textarea::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 10px;
+  }
+</style>
+</head>
+
+<body>
+<!-- Live Animated Gradient Background -->
+<div id="live-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-2;"></div>
+
+<div class="container glass-card" id="auth-container" aria-label="User Authentication" style="z-index:2;max-width:410px;width:100%;padding:48px 32px 36px;margin:0 auto;box-shadow:0 8px 32px rgba(52,152,219,0.18);backdrop-filter:blur(18px) saturate(1.2);border:1.5px solid #b2ebf2;">
+  <div style="display:flex;justify-content:center;margin-bottom:18px;">
+  <img src="https://tse2.mm.bing.net/th/id/OIP.-kGqbAzjNp0mieh-BQwABAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="AI Health Care Logo" style="height:80px;width:auto;border-radius:16px;box-shadow:0 2px 16px #00fff7a0;object-fit:contain;background:#fff;" />
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <div style="background:linear-gradient(135deg,#00fff7 60%,#3498db 100%);width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px #00fff7a0;margin-bottom:18px;">
+      <svg viewBox="0 0 48 48" width="48" height="48" fill="none"><circle cx="24" cy="24" r="24" fill="#e0f7fa"/><path d="M24 24c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zm0 2c-4.42 0-8 3.58-8 8v2h16v-2c0-4.42-3.58-8-8-8z" fill="#26c6da"/></svg>
+    </div>
+    <h2 id="form-title" style="font-size:2rem;font-weight:700;color:#3498db;margin-bottom:8px;letter-spacing:1px;">Login</h2>
+    <div style="color:#00bcd4;font-size:1.1rem;font-weight:600;margin-bottom:22px;text-align:center;">AI-Powered Healthcare Guidance</div>
+  </div>
+  <form id="auth-form" aria-describedby="auth-desc" style="display:flex;flex-direction:column;gap:18px;">
+    <div style="position:relative;">
+      <input type="email" id="email" aria-required="true" placeholder="Email address" required style="width:100%;padding:14px 44px 14px 16px;font-size:15px;border-radius:10px;border:1.5px solid #b2ebf2;background:rgba(255,255,255,0.7);outline:none;transition:border-color 0.3s;" />
+      <svg viewBox="0 0 24 24" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:22px;height:22px;fill:#26c6da;opacity:0.8;"><path d="M12 13.5c-2.33 0-7 1.17-7 3.5V19h14v-2c0-2.33-4.67-3.5-7-3.5z"/><circle cx="12" cy="8.5" r="3.5"/></svg>
+    </div>
+    <div style="position:relative;">
+      <input type="password" id="password" aria-required="true" placeholder="Password" required style="width:100%;padding:14px 44px 14px 16px;font-size:15px;border-radius:10px;border:1.5px solid #b2ebf2;background:rgba(255,255,255,0.7);outline:none;transition:border-color 0.3s;" />
+      <svg viewBox="0 0 24 24" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:22px;height:22px;fill:#26c6da;opacity:0.8;"><path d="M12 17a2 2 0 0 0 2-2v-2a2 2 0 0 0-4 0v2a2 2 0 0 0 2 2zm6-6V9a6 6 0 0 0-12 0v2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2zm-8-2a4 4 0 0 1 8 0v2H8V9z"/></svg>
+    </div>
+    <button type="submit" id="auth-button" style="margin-top:8px;padding:14px 0;font-weight:700;font-size:17px;background:linear-gradient(90deg,#00fff7,#3498db);border:none;border-radius:10px;color:white;cursor:pointer;box-shadow:0 5px 15px rgba(52,152,219,0.18);transition:background 0.3s,box-shadow 0.3s,transform 0.18s;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span id="auth-btn-text">Login</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" style="fill:white;"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    </button>
+  </form>
+  <div class="toggle-link" id="toggle-auth" role="button" tabindex="0" aria-label="Toggle between login and sign up" style="margin-top:18px;">Don't have an account? Sign Up</div>
+</div>
+<style>
+  @media (max-width: 600px) {
+    .glass-card {
+      padding: 32px 8vw 28px !important;
+      border-radius: 18px !important;
+    }
+    .container {
+      width: 98vw !important;
+      min-width: unset !important;
+      max-width: 99vw !important;
+    }
+  }
+</style>
+
+<div class="container" id="healthcare-container" style="display:none;" aria-label="AI Healthcare Assistant">
+  <div style="display:flex;justify-content:center;margin-bottom:18px;">
+    <img src="https://th.bing.com/th/id/OIP.6QnQnQkQkQkQkQkQkQkQkQHaHa?pid=ImgDet&rs=1" alt="AI Health Care Logo" style="height:54px;width:auto;border-radius:12px;box-shadow:0 2px 12px #00fff7a0;object-fit:contain;background:#fff;" />
+  </div>
+  <h2>AI Healthcare Assistant</h2>
+  <div id="ai-tagline" style="display:none;text-align:center;margin-bottom:28px;">
+    <p id="ai-animated-text" style="font-size:1.25rem;color:#00fff7;font-weight:600;letter-spacing:1.2px;text-shadow:0 2px 12px #00fff7a0;animation: aiTextGlow 2.2s infinite alternate cubic-bezier(.4,2,.6,1);">AI POWERED HEALTHCARE GUIDANCE AT YOUR FINGERTIPS</p>
+    <button id="letsgo-btn" style="margin-top:18px;padding:14px 36px;font-size:1.1rem;font-weight:700;background:linear-gradient(90deg,#00fff7,#3498db);color:#232526;border:none;border-radius:10px;box-shadow:0 2px 16px #00fff7a0;cursor:pointer;transition:background 0.2s;">Let's Go</button>
+  </div>
+  <div id="modern-symptom-checker" style="display:none;">
+    <div style="display:flex;justify-content:center;margin-bottom:18px;">
+      <img src="https://th.bing.com/th/id/OIP.6QnQnQkQkQkQkQkQkQkQkQHaHa?pid=ImgDet&rs=1" alt="AI Health Care Logo" style="height:54px;width:auto;border-radius:12px;box-shadow:0 2px 12px #00fff7a0;object-fit:contain;background:#fff;" />
+    </div>
+    <h1 style="font-weight:700;font-size:1.7rem;text-align:center;margin-bottom:24px;color:#2c3e50;">AI Healthcare Symptom Checker</h1>
+    <form id="modern-symptom-form" aria-describedby="form-desc" style="display:flex;flex-direction:column;">
+      <div class="input-group" style="position:relative;margin-bottom:25px;">
+        <label for="modern-symptoms" style="display:block;font-weight:600;margin-bottom:8px;font-size:14px;color:#34495e;">Enter your symptoms</label>
+        <textarea id="modern-symptoms" placeholder="e.g., fever, cough, headache" required aria-required="true" style="width:100%;padding:15px 50px 15px 15px;resize:vertical;min-height:100px;font-size:15px;border-radius:12px;border:2px solid #d1d8e0;transition:border-color 0.3s;font-family:'Poppins',sans-serif;"></textarea>
+        <svg class="input-icon" viewBox="0 0 24 24" style="position:absolute;right:15px;top:50%;transform:translateY(-50%);width:24px;height:24px;fill:#3498db;pointer-events:none;opacity:0.7;"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4s-4 1.79-4 4 1.79 4 4 4zm0 2c-3.31 0-6 2.69-6 6v1h12v-1c0-3.31-2.69-6-6-6z"/></svg>
+      </div>
+      <button type="submit" aria-label="Get solution for entered symptoms" style="background:#3498db;color:white;border:none;padding:15px;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 8px 20px rgba(52,152,219,0.4);transition:background 0.3s,box-shadow 0.3s,transform 0.15s;display:flex;align-items:center;justify-content:center;">
+        Get Solution
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="fill:white;margin-left:8px;width:20px;height:20px;transition:transform 0.3s;"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+    </form>
+    <div id="modern-solution" class="solution-box animated-card" role="alert" aria-live="polite" style="display:none;margin-top:30px;position:relative;background:linear-gradient(135deg,#e0f7fa 60%,#b2ebf2 100%);border-left:6px solid #26c6da;box-shadow:0 8px 32px rgba(38,198,218,0.18);padding:28px 32px 28px 60px;border-radius:18px;font-size:17px;line-height:1.6;color:#006064;opacity:0;transform:translateY(30px) scale(0.98);overflow:hidden;min-height:70px;">
+      <svg id="solution-icon" viewBox="0 0 32 32" style="position:absolute;left:18px;top:28px;width:32px;height:32px;fill:#26c6da;opacity:0.85;"><circle cx="16" cy="16" r="16" fill="#e0f7fa"/><path d="M16 9a1.5 1.5 0 0 1 1.5 1.5v5.793l3.146 3.147a1 1 0 0 1-1.414 1.414l-3.293-3.293A1 1 0 0 1 15 17V10.5A1.5 1.5 0 0 1 16 9z"/></svg>
+      <span id="solution-text"></span>
+    </div>
+    <button id="back-to-main" style="margin-top:24px;background:#e0e6ed;color:#3498db;font-weight:600;border:none;padding:12px 24px;border-radius:10px;cursor:pointer;">Back</button>
+  </div>
+  <button id="logout-button" style="margin-top:20px;">Logout</button>
+</div>
+
+<script>
+  // Modern Symptom Checker navigation
+  const modernChecker = document.getElementById('modern-symptom-checker');
+  const modernForm = document.getElementById('modern-symptom-form');
+  const modernSolution = document.getElementById('modern-solution');
+  const backToMain = document.getElementById('back-to-main');
+  const letsGoBtn2 = document.getElementById('letsgo-btn');
+  if (letsGoBtn2) {
+    letsGoBtn2.addEventListener('click', function() {
+      aiTagline.style.display = 'none';
+      modernChecker.style.display = 'block';
+    });
+  }
+  if (backToMain) {
+    backToMain.addEventListener('click', function() {
+      modernChecker.style.display = 'none';
+      aiTagline.style.display = 'block';
+    });
+  }
+  if (modernForm) {
+    modernForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const symptoms = document.getElementById('modern-symptoms').value.trim();
+      const solutionText = document.getElementById('solution-text');
+      solutionText.textContent = 'Thinking...';
+      modernSolution.style.display = 'block';
+      modernSolution.classList.remove('show');
+      void modernSolution.offsetWidth;
+      modernSolution.classList.add('show');
+      try {
+        const res = await fetch('http://localhost:5000/api/symptoms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symptoms })
+        });
+        const data = await res.json();
+        if (data.solution) {
+          solutionText.innerHTML = data.solution.replace(/\n/g, '<br>');
+        } else if (data.error) {
+          solutionText.textContent = 'Error: ' + data.error;
+        } else {
+          solutionText.textContent = 'Unexpected error.';
+        }
+      } catch (err) {
+        solutionText.textContent = 'Error connecting to AI backend.';
+      }
+      modernSolution.classList.remove('show');
+      void modernSolution.offsetWidth;
+      modernSolution.classList.add('show');
+    });
+  }
+  // Add fade-in-up animation for solution box
+  const style = document.createElement('style');
+  style.textContent = `
+    .animated-card.show {
+      animation: fadeInCard 0.7s cubic-bezier(.4,2,.6,1) forwards;
+    }
+    @keyframes fadeInCard {
+      0% {opacity:0;transform:translateY(30px) scale(0.98);filter:blur(2px);}
+      60% {opacity:1;transform:translateY(-8px) scale(1.03);filter:blur(0.5px);}
+      100% {opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+    }
+  `;
+  document.head.appendChild(style);
+  const authContainer = document.getElementById('auth-container');
+  const healthcareContainer = document.getElementById('healthcare-container');
+  const toggleAuth = document.getElementById('toggle-auth');
+  const formTitle = document.getElementById('form-title');
+  const authForm = document.getElementById('auth-form');
+  const authButton = document.getElementById('auth-button');
+
+  let isLogin = true;
+
+  // Live animated gradient background for login page
+  function animateGradient() {
+    const bg = document.getElementById('live-bg');
+    let angle = 0;
+    setInterval(() => {
+      angle = (angle + 0.2) % 360;
+      bg.style.background = `linear-gradient(${angle}deg, #00fff7 0%, #3498db 50%, #232526 100%)`;
+    }, 30);
+  }
+  function updateLiveBgVisibility() {
+    const authVisible = document.getElementById('auth-container').style.display !== 'none';
+    document.getElementById('live-bg').style.display = authVisible ? 'block' : 'none';
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    animateGradient();
+    updateLiveBgVisibility();
+  });
+
+  // Toggle between Login and Sign Up
+  toggleAuth.addEventListener('click', () => {
+    toggleAuthFunc();
+    updateLiveBgVisibility();
+  });
+  toggleAuth.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleAuthFunc();
+      updateLiveBgVisibility();
+    }
+  });
+
+  function toggleAuthFunc() {
+    isLogin = !isLogin;
+    if (isLogin) {
+      formTitle.textContent = 'Login';
+      authButton.textContent = 'Login';
+      toggleAuth.textContent = "Don't have an account? Sign Up";
+    } else {
+      formTitle.textContent = 'Sign Up';
+      authButton.textContent = 'Sign Up';
+      toggleAuth.textContent = "Already have an account? Login";
+    }
+    authForm.reset();
+  }
+
+  // Simple in-memory user store
+  const users = [];
+
+  authForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (isLogin) {
+      // Login logic
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        alert('Login successful!');
+  authContainer.style.display = 'none';
+  healthcareContainer.style.display = 'block';
+  document.getElementById('ai-tagline').style.display = 'block';
+  document.getElementById('symptom-form').style.display = 'none';
+      } else {
+        alert('Invalid email or password.');
+      }
+    } else {
+      // Sign Up logic
+      if (users.find(u => u.email === email)) {
+        alert('Email already registered.');
+      } else {
+        // Basic password length validation for demonstration
+        if (password.length < 6) {
+          alert('Password should be at least 6 characters.');
+          return;
+        }
+        users.push({email, password});
+        alert('Sign Up successful! Please login.');
+        toggleAuthFunc();
+      }
+    }
+  });
+
+  // Symptom form handling
+  const symptomForm = document.getElementById('symptom-form');
+  const solutionDiv = document.getElementById('solution');
+  const letsGoBtn = document.getElementById('letsgo-btn');
+  const aiTagline = document.getElementById('ai-tagline');
+
+  if (letsGoBtn) {
+    letsGoBtn.addEventListener('click', function() {
+      aiTagline.style.display = 'none';
+      symptomForm.style.display = 'block';
+    });
+  }
+
+  symptomForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const symptoms = document.getElementById('symptoms').value;
+    solutionDiv.textContent = 'Thinking...';
+    solutionDiv.style.display = 'block';
+    try {
+      const res = await fetch('http://localhost:5000/api/symptoms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symptoms })
+      });
+      const data = await res.json();
+      if (data.solution) {
+        solutionDiv.textContent = data.solution;
+      } else if (data.error) {
+        solutionDiv.textContent = 'Error: ' + data.error;
+      } else {
+        solutionDiv.textContent = 'Unexpected error.';
+      }
+    } catch (err) {
+      solutionDiv.textContent = 'Error connecting to AI backend.';
+    }
+  });
+
+  // Logout button
+  document.getElementById('logout-button').addEventListener('click', () => {
+    healthcareContainer.style.display = 'none';
+    authContainer.style.display = 'block';
+    authForm.reset();
+    symptomForm.reset();
+    solutionDiv.style.display = 'none';
+    updateLiveBgVisibility();
+  });
+</script>
+
+</body>
+</html>
